@@ -43,13 +43,24 @@ def create_agent(name: str) -> AssistantAgent:
     """Create an AutoGen agent with specific personality."""
     config = AGENT_CONFIGS.get(name, {})
     display_name = name.replace('_', ' ').title()
+    
+    # Add conciseness instruction to system message
+    system_message = (
+        f"{config.get('persona', '')}\n\n"
+        "Important: Keep your responses concise and conversational. "
+        "Limit responses to 2-3 sentences maximum. "
+        "Focus on key points and avoid lengthy explanations."
+    )
+    
     return AssistantAgent(
-        name=name,  # Use underscore name for internal identification
+        name=name,
         model_client=OpenAIChatCompletionClient(
             model="gpt-4-turbo-preview",
-            api_key=os.getenv("OPENAI_API_KEY")
+            api_key=os.getenv("OPENAI_API_KEY"),
+            # Add max tokens parameter
+            max_tokens=300  # This will limit response length
         ),
-        system_message=config.get("persona", ""),
+        system_message=system_message,
         description=f"Agent representing {display_name}"
     )
 
@@ -121,7 +132,7 @@ async def chat(message: Message):
         agent_team = RoundRobinGroupChat(
             agents,
             termination_condition=termination,
-            max_turns=5
+            max_turns=10
         )
 
         # Run the team chat
