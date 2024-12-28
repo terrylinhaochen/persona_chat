@@ -10,6 +10,7 @@ from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from autogen_agentchat.conditions import TextMentionTermination
 from config.agent_configs import AGENT_CONFIGS
+from config.dialogue_rules import DIALOGUE_RULES
 import PyPDF2
 import io
 
@@ -44,21 +45,34 @@ def create_agent(name: str) -> AssistantAgent:
     config = AGENT_CONFIGS.get(name, {})
     display_name = name.replace('_', ' ').title()
     
-    # Add conciseness instruction to system message
-    system_message = (
-        f"{config.get('persona', '')}\n\n"
-        "Important: Keep your responses concise and conversational. "
-        "Limit responses to 2-3 sentences maximum. "
-        "Focus on key points and avoid lengthy explanations."
-    )
+    # Create a comprehensive system message that combines persona and dialogue rules
+    system_message = f"""
+{config.get('persona', '')}
+
+INTERACTION GUIDELINES:
+
+1. Response Structure:
+- {DIALOGUE_RULES['Response Structure']['Length']}
+- Quick Reaction: {DIALOGUE_RULES['Response Structure']['Components']['Quick_Reaction']}
+- Main Point: {DIALOGUE_RULES['Response Structure']['Components']['Main_Point']}
+- Challenge: {DIALOGUE_RULES['Response Structure']['Components']['Challenge']}
+
+2. Conflict Generation:
+- Philosophical Tensions: {', '.join(DIALOGUE_RULES['Conflict Generation']['Philosophical Tensions'])}
+- Direct Challenge: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Direct_Challenge']}
+- Counter Example: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Counter_Example']}
+- Technical Correction: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Technical_Correction']}
+- Pointed Question: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Pointed_Question']}
+
+Remember: Stay true to your core traits and experiences while following these interaction guidelines.
+"""
     
     return AssistantAgent(
         name=name,
         model_client=OpenAIChatCompletionClient(
             model="gpt-4-turbo-preview",
             api_key=os.getenv("OPENAI_API_KEY"),
-            # Add max tokens parameter
-            max_tokens=300  # This will limit response length
+            max_tokens=300
         ),
         system_message=system_message,
         description=f"Agent representing {display_name}"
