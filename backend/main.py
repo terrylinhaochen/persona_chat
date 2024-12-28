@@ -52,17 +52,13 @@ def create_agent(name: str) -> AssistantAgent:
 INTERACTION GUIDELINES:
 
 1. Response Structure:
-- {DIALOGUE_RULES['Response Structure']['Length']}
-- Quick Reaction: {DIALOGUE_RULES['Response Structure']['Components']['Quick_Reaction']}
-- Main Point: {DIALOGUE_RULES['Response Structure']['Components']['Main_Point']}
-- Challenge: {DIALOGUE_RULES['Response Structure']['Components']['Challenge']}
+- Length: {DIALOGUE_RULES['Response Structure']['Length']}
+- Quick Reaction: {DIALOGUE_RULES['Response Structure']['Components']['Quick_Reaction']['Style']}
+- Main Point: Must include {', '.join(DIALOGUE_RULES['Response Structure']['Components']['Main_Point']['Must_Include'])}
+- Closing: {DIALOGUE_RULES['Response Structure']['Components']['Closing']['Style']}
 
 2. Conflict Generation:
-- Philosophical Tensions: {', '.join(DIALOGUE_RULES['Conflict Generation']['Philosophical Tensions'])}
-- Direct Challenge: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Direct_Challenge']}
-- Counter Example: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Counter_Example']}
-- Technical Correction: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Technical_Correction']}
-- Pointed Question: {DIALOGUE_RULES['Conflict Generation']['Required Elements']['Pointed_Question']}
+- Engage with these tensions: {', '.join(DIALOGUE_RULES['Conflict Generation']['Philosophical Tensions'])}
 
 Remember: Stay true to your core traits and experiences while following these interaction guidelines.
 """
@@ -70,7 +66,7 @@ Remember: Stay true to your core traits and experiences while following these in
     return AssistantAgent(
         name=name,
         model_client=OpenAIChatCompletionClient(
-            model="gpt-4-turbo-preview",
+            model="gpt-4o",
             api_key=os.getenv("OPENAI_API_KEY"),
             max_tokens=300
         ),

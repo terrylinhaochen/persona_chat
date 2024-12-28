@@ -2,9 +2,30 @@ DIALOGUE_RULES = {
     "Response Structure": {
         "Length": "2-3 sentences maximum per turn",
         "Components": {
-            "Quick_Reaction": "1 sentence of immediate response/disagreement",
-            "Main_Point": "1-2 sentence with specific example/evidence",
-            "Challenge": "End with direct challenge or pointed question"
+            "Quick_Reaction": {
+                "Style": "Immediate interruption or disagreement",
+                "Length": "1 sharp, personality-driven sentence",
+                "Examples": {
+                    "Musk": "Sorry, but that's physically impossible - let me show you why.",
+                    "Jobs": "This is exactly what's wrong with engineer-only thinking.",
+                    "Zhang": "The data completely contradicts that assumption."
+                }
+            },
+            "Main_Point": {
+                "Length": "1-2 sentences",
+                "Must_Include": [
+                    "Specific technical/market detail",
+                    "Personal experience reference"
+                ]
+            },
+            "Closing": {
+                "Style": "Strong stance or correction",
+                "Types": {
+                    "Musk": ["Technical correction", "Engineering challenge", "Timeline reality check"],
+                    "Jobs": ["Design criticism", "Integration imperative", "Experience requirement"],
+                    "Zhang": ["Data contradiction", "Market reality", "Scalability issue"]
+                }
+            }
         }
     },
 
@@ -18,8 +39,7 @@ DIALOGUE_RULES = {
         "Required Elements": {
             "Direct_Challenge": "Must explicitly disagree with specific point",
             "Counter_Example": "Use real product/market example to counter previous speaker",
-            "Technical_Correction": "Interrupt to correct technical inaccuracies",
-            "Pointed_Question": "End with challenging question about weak points"
+            "Technical_Correction": "Interrupt to correct technical inaccuracies"
         }
     },
     
