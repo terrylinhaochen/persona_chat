@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .agent-card {
+    @apply p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer;
+  }
+  
+  .agent-card-selected {
+    @apply border-blue-500 bg-blue-50 shadow-lg scale-[1.02];
+  }
+  
+  .chat-message {
+    @apply max-w-[80%] rounded-lg p-4 mb-4;
+  }
+  
+  .user-message {
+    @apply bg-blue-500 text-white ml-auto;
+  }
+  
+  .agent-message {
+    @apply bg-gray-100 mr-auto;
+  }
+} 
