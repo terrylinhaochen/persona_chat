@@ -125,10 +125,7 @@ const MultiAgentDialogue = () => {
   };
 
   const handleSubmit = async () => {
-    if (!message.trim() || selectedAgents.length === 0) {
-      setError('Please enter a message and select at least one agent');
-      return;
-    }
+    if (!message.trim()) return;
     
     setIsLoading(true);
     setError(null);
@@ -141,25 +138,39 @@ const MultiAgentDialogue = () => {
         },
         body: JSON.stringify({
           content: message,
-          selected_agents: selectedAgents,
         }),
       });
+
+      if (!response.ok) throw new Error('Failed to get response');
       
-      if (!response.ok) {
-        throw new Error('Failed to get response from agents');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      // Add user message immediately
+      setResponses(prev => [...prev, { 
+        type: 'message',
+        speaker: 'user',
+        content: message 
+      }]);
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n').filter(line => line.trim());
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(5));
+            setResponses(prev => [...prev, data]);
+          }
+        }
       }
-      
-      const data = await response.json();
-      
-      setResponses(prev => [
-        ...prev,
-        { type: 'user', content: message },
-        ...(Array.isArray(data.responses) ? data.responses : [])
-      ]);
+
       setMessage('');
     } catch (err) {
       setError(err.message);
-      console.error('Error:', err);
     } finally {
       setIsLoading(false);
     }

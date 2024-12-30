@@ -1,21 +1,27 @@
 import os
 import datetime
-from typing import List, Optional, Dict
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from typing import Sequence
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from autogen_agentchat.agents import AssistantAgent
-from autogen_agentchat.teams import RoundRobinGroupChat
+from autogen_agentchat.teams import SelectorGroupChat
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from autogen_agentchat.conditions import TextMentionTermination
 from config.agent_configs import AGENT_CONFIGS
-from config.dialogue_rules import DIALOGUE_RULES
-import PyPDF2
-import io
+from fastapi.responses import StreamingResponse
+import json
+import asyncio
 
 # Load environment variables
 load_dotenv()
+
+# OpenAI API configuration
+model_client = OpenAIChatCompletionClient(
+    model="gpt-4",
+    api_key=os.getenv('OPENAI_API_KEY')
+)
 
 app = FastAPI()
 
@@ -28,148 +34,109 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Store for uploaded documents and their content, organized by agent
-documents: Dict[str, Dict[str, Dict]] = {
-    "elon_musk": {},
-    "steve_jobs": {},
-    "zhang_yiming": {}
-}
-
 class Message(BaseModel):
     content: str
-    selected_agents: List[str]
-    context: Optional[List[dict]] = []
-
-def create_agent(name: str) -> AssistantAgent:
-    """Create an AutoGen agent with specific personality."""
-    config = AGENT_CONFIGS.get(name, {})
-    display_name = name.replace('_', ' ').title()
-    
-    # Create a comprehensive system message that combines persona and dialogue rules
-    system_message = f"""
-{config.get('persona', '')}
-
-INTERACTION GUIDELINES:
-
-1. Response Structure:
-- Length: {DIALOGUE_RULES['Response Structure']['Length']}
-- Quick Reaction: {DIALOGUE_RULES['Response Structure']['Components']['Quick_Reaction']['Style']}
-- Main Point: Must include {', '.join(DIALOGUE_RULES['Response Structure']['Components']['Main_Point']['Must_Include'])}
-- Closing: {DIALOGUE_RULES['Response Structure']['Components']['Closing']['Style']}
-
-2. Conflict Generation:
-- Engage with these tensions: {', '.join(DIALOGUE_RULES['Conflict Generation']['Philosophical Tensions'])}
-
-Remember: Stay true to your core traits and experiences while following these interaction guidelines.
-"""
-    
-    return AssistantAgent(
-        name=name,
-        model_client=OpenAIChatCompletionClient(
-            model="gpt-4o",
-            api_key=os.getenv("OPENAI_API_KEY"),
-            max_tokens=300
-        ),
-        system_message=system_message,
-        description=f"Agent representing {display_name}"
-    )
-
-@app.post("/upload-document")
-async def upload_document(
-    file: UploadFile = File(...),
-    agent_name: str = Form(...)
-):
-    """Handle document uploads for agents."""
-    try:
-        content = await file.read()
-        
-        # Handle different file types
-        if file.filename.endswith('.pdf'):
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(content))
-            content = ""
-            for page in pdf_reader.pages:
-                content += page.extract_text()
-        elif file.filename.endswith('.txt'):
-            content = content.decode()
-        else:
-            raise HTTPException(status_code=400, detail="Unsupported file type")
-
-        # Store document
-        if agent_name not in documents:
-            documents[agent_name] = {}
-            
-        file_id = str(len(documents[agent_name]) + 1)
-        documents[agent_name][file_id] = {
-            "name": file.filename,
-            "content": content,
-            "timestamp": datetime.datetime.now().isoformat()
-        }
-
-        return {
-            "id": file_id,
-            "name": file.filename,
-            "timestamp": documents[agent_name][file_id]["timestamp"]
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/documents/{agent_name}")
-async def get_documents(agent_name: str):
-    """Get all documents for a specific agent."""
-    if agent_name not in documents:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    
-    return {
-        "documents": [
-            {
-                "id": doc_id,
-                "name": doc["name"],
-                "timestamp": doc["timestamp"]
-            }
-            for doc_id, doc in documents[agent_name].items()
-        ]
-    }
 
 @app.post("/chat")
 async def chat(message: Message):
-    try:
-        # Create agents for selected personalities
-        agents = [create_agent(name.lower().replace(' ', '_')) for name in message.selected_agents]
-        
-        # Create team chat
-        termination = TextMentionTermination("TERMINATE")
-        agent_team = RoundRobinGroupChat(
-            agents,
-            termination_condition=termination,
-            max_turns=10
-        )
+    async def generate():
+        try:
+            # Create host
+            host = AssistantAgent(
+                name="Host",
+                description="Late-night radio show host guiding conversations",
+                system_message=AGENT_CONFIGS["Host"]["persona"],
+                model_client=model_client
+            )
+            
+            # Create guests
+            handel = AssistantAgent(
+                name="Handel",
+                description="Baroque composer specializing in religious music",
+                system_message=AGENT_CONFIGS["Handel"]["persona"],
+                model_client=model_client
+            )
+            
+            sultan = AssistantAgent(
+                name="SultanMehmed",
+                description="Ottoman ruler who conquered Constantinople",
+                system_message=AGENT_CONFIGS["SultanMehmed"]["persona"],
+                model_client=model_client
+            )
+            
+            scott = AssistantAgent(
+                name="Scott",
+                description="Pioneer of Antarctic exploration",
+                system_message=AGENT_CONFIGS["Scott"]["persona"],
+                model_client=model_client
+            )
 
-        # Run the team chat
-        responses = []
-        async for response in agent_team.run_stream(task=message.content):
-            # Check if it's a message from an agent
-            if hasattr(response, 'source') and response.source in [agent.name for agent in agents]:
-                # Convert underscore name back to display name
-                display_name = response.source.replace('_', ' ').title()
-                responses.append({
-                    "type": "agent",
-                    "speaker": display_name,
-                    "content": response.content,
-                    "timestamp": datetime.datetime.now().isoformat()
-                })
+            def selector_func(messages: Sequence[str]) -> str | None:
+                # If no messages, host starts
+                if not messages:
+                    return "Host"
+                    
+                # Get last message's sender and content
+                last_message = messages[-1]
+                last_speaker = last_message.source
+                last_content = last_message.content
+                
+                # After user message, host responds
+                if last_speaker == "user":
+                    return "Host"
+                
+                # If host invites specific guest, they must speak next
+                if last_speaker == "Host":
+                    guests = {
+                        "Handel": ["handel", "composer"],
+                        "SultanMehmed": ["sultan", "mehmed", "mehmet"],
+                        "Scott": ["scott", "explorer"]
+                    }
+                    
+                    for guest, keywords in guests.items():
+                        if any(keyword.lower() in last_content.lower() for keyword in keywords):
+                            return guest
+                    return None  # If no specific invitation, let model choose next speaker
+                
+                # Every 3-4 turns, let host guide conversation
+                if len(messages) % 4 == 0 and last_speaker != "Host":
+                    return "Host"
+                    
+                return None  # Let model choose speaker in other cases
 
-        return {"responses": responses}
-    except Exception as e:
-        print(f"Error in chat endpoint: {str(e)}")
-        return {
-            "responses": [{
-                "type": "agent",
-                "speaker": "System",
-                "content": f"Error: {str(e)}",
-                "timestamp": datetime.datetime.now().isoformat()
-            }]
-        }
+            # Create team chat
+            agent_team = SelectorGroupChat(
+                participants=[host, handel, sultan, scott],
+                selector_func=selector_func,
+                model_client=model_client,
+                termination_condition=TextMentionTermination("Thank you for listening"),
+                max_turns=12
+            )
+
+            initial_message = f"Host: Midnight strikes, welcome to 'Starry Night Talks'. Tonight, we received a listener's concern: {message.content}"
+            
+            async for response in agent_team.run_stream(task=initial_message):
+                if hasattr(response, 'source') and response.content:
+                    data = {
+                        "type": "message",
+                        "speaker": response.source,
+                        "content": response.content,
+                        "timestamp": datetime.datetime.now().isoformat()
+                    }
+                    yield f"data: {json.dumps(data)}\n\n"
+                    await asyncio.sleep(0.1)  # Small delay between messages
+                    
+        except Exception as e:
+            error_data = {
+                "type": "error",
+                "content": str(e)
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream"
+    )
 
 if __name__ == "__main__":
     import uvicorn
