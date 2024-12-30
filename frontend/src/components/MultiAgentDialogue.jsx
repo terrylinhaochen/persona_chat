@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 
 const AGENTS = {
-  "elon_musk": "First principles thinking, engineering focus",
-  "steve_jobs": "Design and user experience expert",
-  "zhang_yiming": "Data-driven product development"
+  "主持人": "深夜电台主持人，温暖引导者",
+  "亨德尔": "艺术家的重生，音乐创作者",
+  "苏丹穆罕默德二世": "年轻的创新者，果断的决策者",
+  "斯科特": "传统主义者的反思，探险家"
 };
 
 const LoadingIndicator = () => (
