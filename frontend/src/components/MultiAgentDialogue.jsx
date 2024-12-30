@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
 
 const AGENTS = {
-  "Host": "Late-night radio host, warm guide",
-  "Handel": "Artist's rebirth, music creator",
-  "SultanMehmed": "Young innovator, decisive leader",
-  "Scott": "Traditional explorer, reflection bearer"
+  "Host": {
+    description: "Late-night radio host, warm guide",
+    icon: "🎙️",
+    color: "bg-purple-100"
+  },
+  "Handel": {
+    description: "Artist's rebirth, music creator",
+    icon: "🎼",
+    color: "bg-blue-100"
+  },
+  "SultanMehmed": {
+    description: "Young innovator, decisive leader",
+    displayName: "Sultan Mehmed II",
+    icon: "👑",
+    color: "bg-red-100"
+  },
+  "Scott": {
+    description: "Traditional explorer, reflection bearer",
+    icon: "🧭",
+    color: "bg-green-100"
+  }
 };
 
 // Add display name mapping if needed
@@ -67,6 +84,25 @@ const FileUpload = ({ agent, onUpload }) => {
       />
       {isUploading && <div className="text-sm text-blue-600 mt-1">Uploading...</div>}
       {error && <div className="text-sm text-red-600 mt-1">Error: {error}</div>}
+    </div>
+  );
+};
+
+const Message = ({ speaker, content }) => {
+  const agent = AGENTS[speaker] || {};
+  return (
+    <div className={`flex gap-3 p-4 rounded-lg ${agent.color || 'bg-gray-100'}`}>
+      <div className="flex-shrink-0 text-2xl">
+        {agent.icon || '👤'}
+      </div>
+      <div className="flex-grow">
+        <div className="font-bold mb-1">
+          {agent.displayName || speaker}
+        </div>
+        <div className="text-gray-700">
+          {content}
+        </div>
+      </div>
     </div>
   );
 };
@@ -158,7 +194,7 @@ const MultiAgentDialogue = () => {
               className="w-full text-left"
             >
               <h3 className="text-xl font-bold mb-2">{agent}</h3>
-              <p className="text-gray-600 text-sm mb-4">{description}</p>
+              <p className="text-gray-600 text-sm mb-4">{description.description}</p>
             </button>
             <FileUpload 
               agent={agent} 
@@ -176,20 +212,11 @@ const MultiAgentDialogue = () => {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="h-[500px] overflow-y-auto mb-4 space-y-4 border rounded-lg p-4">
           {responses.map((response, idx) => (
-            <div key={idx} 
-              className={`flex ${response.type === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[70%] rounded-lg p-4 ${
-                response.type === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100'
-              }`}>
-                {response.type === 'agent' && (
-                  <div className="font-bold text-blue-600 mb-2">{response.speaker}</div>
-                )}
-                <p className="text-sm">{response.content}</p>
-              </div>
-            </div>
+            <Message
+              key={idx}
+              speaker={response.speaker}
+              content={response.content}
+            />
           ))}
           {isLoading && (
             <div className="flex justify-center py-4">
@@ -210,9 +237,9 @@ const MultiAgentDialogue = () => {
           />
           <button
             onClick={handleSubmit}
-            disabled={!message.trim() || selectedAgents.length === 0 || isLoading}
+            disabled={!message.trim() || isLoading}
             className={`px-8 py-4 rounded-lg font-medium transition-all ${
-              !message.trim() || selectedAgents.length === 0 || isLoading
+              !message.trim() || isLoading
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-blue-500 hover:bg-blue-600 text-white'
             }`}
