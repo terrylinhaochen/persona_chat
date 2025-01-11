@@ -1,10 +1,10 @@
-# Parenting Insights Generator
+# Career Insights Generator
 
-An AI-powered application that transforms parenting challenges into insightful podcast episode concepts, complete with book recommendations and pattern analysis.
+An AI-powered application that transforms workplace challenges into insightful podcast episode concepts, complete with book recommendations and pattern analysis.
 
 ## 🌟 Features
 
-- Real-time AI-generated insights about parenting dynamics
+- Real-time AI-generated insights about workplace dynamics
 - Podcast-style episode titles and descriptions
 - Curated book recommendations for each topic
 - Clean, minimalist user interface
@@ -33,7 +33,7 @@ An AI-powered application that transforms parenting challenges into insightful p
 - Uses Claude 3 Sonnet model
 - System prompt engineering for consistent outputs
 - JSON response formatting
-- Pattern recognition in parenting dynamics
+- Pattern recognition in workplace dynamics
 - Book recommendation curation
 
 ## 🚀 Getting Started
@@ -48,7 +48,7 @@ An AI-powered application that transforms parenting challenges into insightful p
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd parenting-insights
+cd career-insights
 ```
 
 2. Install dependencies:
@@ -80,7 +80,7 @@ http://localhost:5173
 
 ## 💡 Usage
 
-1. Enter a parenting challenge or topic in the input field
+1. Enter a workplace challenge or topic in the input field
 2. Click "Generate Insight" or press Enter
 3. Wait for the AI to generate:
    - A podcast episode title
@@ -138,16 +138,16 @@ The AI generates responses in the following JSON structure:
   "description": "description that reveals patterns and connections",
   "books": {
     "primary": {
-      "title": "core book revealing underlying patterns",
+      "title": "core book exploring system dynamics",
       "author": "author name"
     },
     "supporting": [
       {
-        "title": "first book connecting to broader insights",
+        "title": "first book offering pattern insights",
         "author": "author name"
       },
       {
-        "title": "second book connecting to broader insights",
+        "title": "second book offering pattern insights",
         "author": "author name"
       }
     ]
@@ -182,4 +182,4 @@ Common issues and solutions:
 
 ## 📝 License
 
-MIT License - feel free to use and modify for your own projects.
+MIT License - feel free to use and modify for your own projects. 
