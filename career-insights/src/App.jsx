@@ -59,10 +59,12 @@ const App = () => {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [mastodonUrl, setMastodonUrl] = useState(null);
 
   const generateInsight = async () => {
     setLoading(true);
     setError(null);
+    setMastodonUrl(null);
     try {
       const response = await fetch('http://localhost:3001/api/generate', {
         method: 'POST',
@@ -94,18 +96,21 @@ const App = () => {
       
       try {
         const text = data.content[0].text.trim();
-        // Try to extract JSON if it's wrapped in other text
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
           throw new Error('No JSON object found in response');
         }
         const parsedInsight = JSON.parse(jsonMatch[0]);
         
-        // Validate the parsed JSON structure
         if (!parsedInsight.episodeTitle || !parsedInsight.description || !parsedInsight.books) {
           throw new Error('Invalid insight format: missing required fields');
         }
         setInsight(parsedInsight);
+        
+        // Set Mastodon URL if available
+        if (data.mastodon?.url) {
+          setMastodonUrl(data.mastodon.url);
+        }
       } catch (parseError) {
         console.error('Parse error:', parseError);
         console.error('Raw response:', data.content[0].text);
@@ -190,6 +195,31 @@ const App = () => {
             fontSize: '0.875rem'
           }}>
             {error}
+          </div>
+        )}
+
+        {mastodonUrl && (
+          <div style={{
+            marginTop: '20px',
+            padding: '12px',
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            color: '#1e40af',
+            fontSize: '0.875rem'
+          }}>
+            <span>Posted to Mastodon: </span>
+            <a 
+              href={mastodonUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                color: '#2563eb',
+                textDecoration: 'underline'
+              }}
+            >
+              View Post
+            </a>
           </div>
         )}
       </div>
