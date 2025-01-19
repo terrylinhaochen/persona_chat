@@ -50,10 +50,12 @@ const App = () => {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [mastodonUrl, setMastodonUrl] = useState(null);
 
   const generateInsight = async () => {
     setLoading(true);
     setError(null);
+    setMastodonUrl(null);
     try {
       const response = await fetch('http://localhost:3001/api/generate', {
         method: 'POST',
@@ -67,7 +69,7 @@ const App = () => {
           messages: [
             {
               role: "user",
-              content: topic
+              content: "Generate a podcast episode about: " + topic
             }
           ]
         })
@@ -84,9 +86,25 @@ const App = () => {
       }
       
       try {
-        const parsedInsight = JSON.parse(data.content[0].text);
+        const text = data.content[0].text.trim();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('No JSON object found in response');
+        }
+        const parsedInsight = JSON.parse(jsonMatch[0]);
+        
+        if (!parsedInsight.episodeTitle || !parsedInsight.description || !parsedInsight.books) {
+          throw new Error('Invalid insight format: missing required fields');
+        }
         setInsight(parsedInsight);
+        
+        // Set Mastodon URL if available
+        if (data.mastodon) {
+          setMastodonUrl(data.mastodon);
+        }
       } catch (parseError) {
+        console.error('Parse error:', parseError);
+        console.error('Raw response:', data.content[0].text);
         throw new Error('Failed to parse AI response: ' + parseError.message);
       }
     } catch (error) {
@@ -168,6 +186,50 @@ const App = () => {
             fontSize: '0.875rem'
           }}>
             {error}
+          </div>
+        )}
+
+        {mastodonUrl && (
+          <div style={{
+            marginTop: '20px',
+            padding: '12px',
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            color: '#1e40af',
+            fontSize: '0.875rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div>
+              <span>Main post: </span>
+              <a 
+                href={mastodonUrl.mainPost.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  color: '#2563eb',
+                  textDecoration: 'underline'
+                }}
+              >
+                View Post
+              </a>
+            </div>
+            <div>
+              <span>Book recommendations: </span>
+              <a 
+                href={mastodonUrl.replyPost.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  color: '#2563eb',
+                  textDecoration: 'underline'
+                }}
+              >
+                View Reply
+              </a>
+            </div>
           </div>
         )}
       </div>
