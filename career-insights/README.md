@@ -10,6 +10,29 @@ An AI-powered application that transforms workplace challenges into insightful p
 - Clean, minimalist user interface
 - Error handling and validation
 - Real-time response streaming
+- Automatic posting to Mastodon with threaded responses
+
+## 📁 Project Structure
+
+```
+career-insights/
+├── src/
+│   ├── App.jsx              # Main application component
+│   └── main.jsx             # Application entry point
+├── public/                  # Static assets
+├── server.js               # Express backend server
+├── package.json           # Project dependencies and scripts
+├── .env                   # Environment variables
+├── .gitignore            # Git ignore rules
+├── index.html            # HTML template
+├── vite.config.js        # Vite configuration
+└── README.md             # Project documentation
+
+Key Files:
+- App.jsx: React component with UI and API integration
+- server.js: Express server with Claude and Mastodon API integration
+- .env: Configuration for API keys and endpoints
+```
 
 ## 🛠 Technical Implementation
 
@@ -25,6 +48,7 @@ An AI-powered application that transforms workplace challenges into insightful p
 #### Backend (Express + Node.js)
 - Express server as API proxy
 - Anthropic Claude API integration
+- Mastodon API integration for social sharing
 - CORS handling for local development
 - Environment variable management
 - Error handling and logging
@@ -42,6 +66,7 @@ An AI-powered application that transforms workplace challenges into insightful p
 - Node.js (v14 or higher)
 - npm (v6 or higher)
 - Anthropic API key
+- Mastodon account and API access token
 
 ### Installation
 
@@ -59,6 +84,8 @@ npm install
 3. Create a `.env` file in the root directory:
 ```env
 CLAUDE_API_KEY=your_anthropic_api_key_here
+MASTODON_ACCESS_TOKEN=your_mastodon_access_token_here
+MASTODON_INSTANCE=https://your.mastodon.instance
 ```
 
 ### Running the Application
@@ -86,6 +113,9 @@ http://localhost:5173
    - A podcast episode title
    - A detailed description
    - Book recommendations
+4. View the generated content on Mastodon:
+   - Main post with the insight
+   - Threaded reply with book recommendations
 
 ## 🔧 Implementation Details
 
@@ -110,6 +140,7 @@ src/
 - API proxy implementation
 - Error handling middleware
 - Environment variable management
+- Mastodon integration
 
 ### API Integration
 
@@ -179,6 +210,11 @@ Common issues and solutions:
    - Check console for raw response
    - Verify JSON structure
    - Check for response validation
+
+4. **Mastodon Issues**
+   - Verify access token permissions
+   - Check instance URL format
+   - Ensure content length is within limits
 
 ## 📝 License
 

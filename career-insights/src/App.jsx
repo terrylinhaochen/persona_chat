@@ -22,10 +22,11 @@ Your style is:
 - unexpected: novel connections
 
 Content Rules:
-1. Reveal hidden systems in workplace dynamics
-2. Connect workplace elements to unexpected domains
-3. Balance intrigue with practical workplace insights
-4. Vary approaches (system analysis, pattern recognition, evolution)
+1. Keep responses concise - title and description combined must be under 500 characters
+2. Reveal hidden systems in workplace dynamics
+3. Connect workplace elements to unexpected domains
+4. Balance intrigue with practical workplace insights
+5. Vary approaches (system analysis, pattern recognition, evolution)
 
 Example outputs:
 1. "The Coffee Break Conspiracy - How informal office networks historically shaped promotion patterns, and why remote work is changing everything"
@@ -206,20 +207,39 @@ const App = () => {
             border: '1px solid #3b82f6',
             borderRadius: '8px',
             color: '#1e40af',
-            fontSize: '0.875rem'
+            fontSize: '0.875rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
           }}>
-            <span>Posted to Mastodon: </span>
-            <a 
-              href={mastodonUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{
-                color: '#2563eb',
-                textDecoration: 'underline'
-              }}
-            >
-              View Post
-            </a>
+            <div>
+              <span>Main post: </span>
+              <a 
+                href={mastodonUrl.mainPost.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  color: '#2563eb',
+                  textDecoration: 'underline'
+                }}
+              >
+                View Post
+              </a>
+            </div>
+            <div>
+              <span>Book recommendations: </span>
+              <a 
+                href={mastodonUrl.replyPost.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  color: '#2563eb',
+                  textDecoration: 'underline'
+                }}
+              >
+                View Reply
+              </a>
+            </div>
           </div>
         )}
       </div>

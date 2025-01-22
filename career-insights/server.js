@@ -31,26 +31,21 @@ if (!MASTODON_ACCESS_TOKEN) {
 
 async function postToMastodon(originalQuestion, insight) {
   try {
-    // Format the toot content with truncation
-    const titleAndDesc = `Q: ${originalQuestion}
+    // Format the main content
+    const mainContent = `Q: ${originalQuestion}
 
 📝 ${insight.episodeTitle}
 
 ${insight.description}`.trim();
 
-    // Truncate content to fit Mastodon's limit (leaving room for book info)
-    const maxMainLength = 400; // Leave 100 chars for book info
-    const truncatedMain = titleAndDesc.length > maxMainLength 
-      ? titleAndDesc.slice(0, maxMainLength - 3) + '...'
-      : titleAndDesc;
+    // Truncate main content if needed
+    const truncatedMain = mainContent.length > 450 
+      ? mainContent.slice(0, 447) + '...'
+      : mainContent;
 
-    // Add book recommendation with remaining space
-    const bookInfo = `\n\n📚 ${insight.books.primary.title} by ${insight.books.primary.author}`;
-    const tootContent = truncatedMain + bookInfo;
-
-    // Post to Mastodon
-    const response = await axios.post(`${MASTODON_INSTANCE}/api/v1/statuses`, {
-      status: tootContent,
+    // Post main content
+    const mainPost = await axios.post(`${MASTODON_INSTANCE}/api/v1/statuses`, {
+      status: truncatedMain,
       visibility: 'public'
     }, {
       headers: {
@@ -59,7 +54,31 @@ ${insight.description}`.trim();
       }
     });
 
-    return response.data;
+    // Format book recommendations
+    const bookContent = `📚 Recommended Reading:
+
+• ${insight.books.primary.title} by ${insight.books.primary.author}
+
+Supporting reads:
+• ${insight.books.supporting[0].title} by ${insight.books.supporting[0].author}
+• ${insight.books.supporting[1].title} by ${insight.books.supporting[1].author}`.trim();
+
+    // Post book recommendations as a reply
+    const replyPost = await axios.post(`${MASTODON_INSTANCE}/api/v1/statuses`, {
+      status: bookContent,
+      in_reply_to_id: mainPost.data.id,
+      visibility: 'public'
+    }, {
+      headers: {
+        'Authorization': `Bearer ${MASTODON_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return {
+      mainPost: mainPost.data,
+      replyPost: replyPost.data
+    };
   } catch (error) {
     console.error('Error posting to Mastodon:', error);
     throw new Error('Failed to post to Mastodon: ' + error.message);
@@ -104,12 +123,18 @@ app.post('/api/generate', async (req, res) => {
     const originalQuestion = req.body.messages[0].content.replace('Generate a podcast episode about: ', '');
     const mastodonResponse = await postToMastodon(originalQuestion, insight);
 
-    // Return both the insight and Mastodon post URL
+    // Return both the insight and Mastodon post URLs
     res.json({
       ...response.data,
       mastodon: {
-        url: mastodonResponse.url,
-        id: mastodonResponse.id
+        mainPost: {
+          url: mastodonResponse.mainPost.url,
+          id: mastodonResponse.mainPost.id
+        },
+        replyPost: {
+          url: mastodonResponse.replyPost.url,
+          id: mastodonResponse.replyPost.id
+        }
       }
     });
   } catch (error) {
