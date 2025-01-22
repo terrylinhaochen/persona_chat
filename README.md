@@ -15,6 +15,36 @@ A real-time interactive discussion panel featuring AI agents with distinct perso
 - Responsive UI with Tailwind CSS
 - Server-Sent Events (SSE) for real-time communication
 
+## 📁 Project Structure
+
+```
+multi-agent-panel/
+├── backend/
+│   ├── config/
+│   │   └── agent_configs.py     # Agent personality configurations
+│   ├── agents/                  # Agent implementation modules
+│   ├── routes/                  # API route handlers
+│   ├── utils/                   # Utility functions
+│   ├── main.py                  # FastAPI application entry
+│   └── requirements.txt         # Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # React components
+│   │   │   └── MultiAgentDialogue.jsx  # Main dialogue component
+│   │   ├── App.jsx             # Root React component
+│   │   └── main.jsx            # Application entry point
+│   ├── public/                  # Static assets
+│   ├── package.json            # Node.js dependencies
+│   └── tailwind.config.js      # Tailwind CSS configuration
+├── .env                        # Environment variables
+└── README.md                   # Project documentation
+
+Key Files:
+- agent_configs.py: Defines agent personalities and behaviors
+- MultiAgentDialogue.jsx: Manages agent interactions and UI
+- main.py: FastAPI server with SSE implementation
+```
+
 ## 🛠 Technical Stack
 
 ### Frontend
@@ -133,6 +163,25 @@ The system implements a multi-agent dialogue system with four distinct personas:
 - API key protection
 - Rate limiting (to be implemented)
 
+## 🐛 Troubleshooting
+
+Common issues and solutions:
+
+1. **SSE Connection Issues**
+   - Check backend server is running
+   - Verify CORS settings
+   - Ensure proper event stream format
+
+2. **Agent Response Delays**
+   - Monitor API rate limits
+   - Check system resources
+   - Verify network connectivity
+
+3. **File Upload Errors**
+   - Check file size limits
+   - Verify supported formats
+   - Ensure proper form data
+
 ## 🚧 Future Improvements
 
 - Add authentication system
@@ -141,9 +190,9 @@ The system implements a multi-agent dialogue system with four distinct personas:
 - Enhance document processing capabilities
 - Add conversation export functionality
 
-## 📄 License
+## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - feel free to use and modify for your own projects.
 
 ## 🤝 Contributing
 
