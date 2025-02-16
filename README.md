@@ -1,194 +1,141 @@
 # Multi-Agent Discussion Panel
 
-A real-time interactive discussion panel featuring AI agents with distinct personas, powered by FastAPI and React. The system simulates a late-night radio show format where historical figures engage in meaningful dialogue about user-submitted topics.
+A Streamlit-powered interactive discussion panel featuring AI agents with customizable personas. The system simulates a late-night radio show format where user-defined personas engage in meaningful dialogue about submitted topics.
 
 ## 🌟 Features
 
-- Real-time streaming responses from multiple AI agents
+- Real-time AI-generated responses from multiple agents
 - Late-night radio show format with a host and guest speakers
-- Historical personas with unique perspectives:
-  - Host: A warm, professional radio show host
-  - Handel: Baroque composer (circa 1741)
-  - Sultan Mehmed II: Young Ottoman ruler
-  - Scott: Antarctic explorer
-- Document upload capability for each agent
-- Responsive UI with Tailwind CSS
-- Server-Sent Events (SSE) for real-time communication
+- Customizable personas:
+  - Create and manage unique personas
+  - Define personality traits and expertise
+  - Save personas for future use
+- Dynamic participant selection (1-3 participants)
+- Clean, intuitive Streamlit interface
+- Persistent persona storage
 
 ## 📁 Project Structure
 
 ```
 multi-agent-panel/
-├── backend/
-│   ├── config/
-│   │   └── agent_configs.py     # Agent personality configurations
-│   ├── agents/                  # Agent implementation modules
-│   ├── routes/                  # API route handlers
-│   ├── utils/                   # Utility functions
-│   ├── main.py                  # FastAPI application entry
-│   └── requirements.txt         # Python dependencies
-├── frontend/
-│   ├── src/
-│   │   ├── components/          # React components
-│   │   │   └── MultiAgentDialogue.jsx  # Main dialogue component
-│   │   ├── App.jsx             # Root React component
-│   │   └── main.jsx            # Application entry point
-│   ├── public/                  # Static assets
-│   ├── package.json            # Node.js dependencies
-│   └── tailwind.config.js      # Tailwind CSS configuration
-├── .env                        # Environment variables
-└── README.md                   # Project documentation
+├── app.py                 # Main Streamlit application
+├── requirements.txt       # Python dependencies
+├── personas.json         # Saved persona configurations
+├── .env                  # Environment variables
+└── README.md            # Project documentation
 
 Key Files:
-- agent_configs.py: Defines agent personalities and behaviors
-- MultiAgentDialogue.jsx: Manages agent interactions and UI
-- main.py: FastAPI server with SSE implementation
+- app.py: Streamlit application with UI and chat logic
+- personas.json: Persistent storage for created personas
 ```
 
 ## 🛠 Technical Stack
 
-### Frontend
-- React.js
-- Tailwind CSS
-- Server-Sent Events (SSE)
-- Modern JavaScript (ES6+)
-
-### Backend
-- FastAPI
+- Streamlit
 - Python 3.8+
-- AutoGen framework for AI agents
-- OpenAI GPT-4 API
+- Anthropic Claude API
+- JSON for persona storage
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Python 3.8 or higher
-- Node.js 14 or higher
-- OpenAI API key
+- Anthropic API key
 
-### Backend Setup
+### Installation
 
-1. Create and activate a virtual environment:
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd multi-agent-panel
+```
+
+2. Create and activate a virtual environment:
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-2. Install backend dependencies:
+3. Install dependencies:
 ```bash
-cd backend
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file in the backend directory:
+4. Create a `.env` file:
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
-FRONTEND_URL=http://localhost:3000
+CLAUDE_API_KEY=your_anthropic_api_key_here
 ```
 
-4. Start the backend server:
+5. Run the application:
 ```bash
-uvicorn main:app --reload --port 8000
+streamlit run app.py
 ```
 
-### Frontend Setup
+## 💡 Usage
 
-1. Install frontend dependencies:
-```bash
-cd frontend
-npm install
-```
+### Managing Personas
 
-2. Start the frontend development server:
-```bash
-npm start
-```
+1. Create New Personas:
+   - Click "Create New Persona" in the right sidebar
+   - Enter name and description
+   - Click "Add Persona" to save
 
-The application will be available at `http://localhost:3000`
+2. View Personas:
+   - Existing personas appear in the gallery view
+   - Click to expand and view full descriptions
+   - Delete unwanted personas
+
+### Setting Up Discussions
+
+1. Select Participants:
+   - Choose up to 3 participants from dropdown menus
+   - Each participant uses a saved persona
+   - Host is always included by default
+
+2. Start a Discussion:
+   - Enter your topic or question
+   - Click "Start Discussion"
+   - View the AI-generated conversation
 
 ## 🏗 System Architecture
 
-### Agent System Design
+### Persona Management
+- JSON-based storage for persistence
+- Dynamic persona creation and deletion
+- Automatic loading of saved personas
 
-The system implements a multi-agent dialogue system with four distinct personas:
+### Discussion System
+- Host + 1-3 additional participants
+- Flexible participant selection
+- Contextual responses based on persona descriptions
 
-1. **Host Agent**
-   - Controls conversation flow
-   - Introduces topics and manages transitions
-   - Ensures balanced participation
+## 🔒 Security
 
-2. **Guest Agents**
-   - Each has a unique historical perspective
-   - Maintains consistent character traits
-   - Responds based on historical context
-
-### Conversation Flow
-
-1. User submits a topic/question
-2. Host introduces the topic
-3. Relevant guests respond based on their expertise
-4. Host manages turn-taking and discussion depth
-5. Conversation continues until natural conclusion
-
-### Technical Implementation
-
-#### Backend Architecture
-- FastAPI handles HTTP requests and SSE
-- AutoGen framework manages agent interactions
-- Selector function determines speaking order
-- Streaming responses ensure real-time interaction
-
-#### Frontend Architecture
-- React components for UI elements
-- Real-time updates via SSE
-- Tailwind CSS for styling
-- File upload capability for each agent
-
-## 📝 API Endpoints
-
-### POST /chat
-- Accepts user messages
-- Returns SSE stream of agent responses
-- Format: `{"content": "user_message"}`
-
-### POST /upload-document
-- Handles document uploads for agents
-- Accepts multipart/form-data
-- Returns upload confirmation
-
-## 🔒 Security Considerations
-
-- CORS configuration for frontend-backend communication
-- Environment variables for sensitive data
-- API key protection
-- Rate limiting (to be implemented)
+- Environment variables for API keys
+- Local storage for persona data
+- Input validation and sanitization
 
 ## 🐛 Troubleshooting
 
 Common issues and solutions:
 
-1. **SSE Connection Issues**
-   - Check backend server is running
-   - Verify CORS settings
-   - Ensure proper event stream format
+1. **Persona Not Saving**
+   - Check write permissions for personas.json
+   - Verify JSON format
+   - Clear browser cache
 
-2. **Agent Response Delays**
+2. **API Response Issues**
+   - Verify API key in .env
+   - Check internet connection
    - Monitor API rate limits
-   - Check system resources
-   - Verify network connectivity
-
-3. **File Upload Errors**
-   - Check file size limits
-   - Verify supported formats
-   - Ensure proper form data
 
 ## 🚧 Future Improvements
 
-- Add authentication system
-- Implement conversation history
-- Add more agent personas
-- Enhance document processing capabilities
-- Add conversation export functionality
+- Add persona categories/tags
+- Implement conversation history export
+- Add persona templates
+- Enable persona sharing
+- Add conversation branching
 
 ## 📝 License
 
@@ -199,7 +146,7 @@ MIT License - feel free to use and modify for your own projects.
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
 5. Open a Pull Request

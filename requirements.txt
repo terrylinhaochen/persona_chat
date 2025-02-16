@@ -1,0 +1,5 @@
+streamlit==1.31.1
+anthropic==0.8.1
+python-dotenv==1.0.1
+pyautogen>=0.7.4
+openai>=1.12.0 

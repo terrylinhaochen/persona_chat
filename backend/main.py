@@ -114,7 +114,7 @@ async def chat(message: Message):
                 max_turns=12
             )
 
-            initial_message = f"Host: Midnight strikes, welcome to 'Starry Night Talks'. Tonight, we received a listener's concern: {message.content}"
+            initial_message = f"Host: Welcome to our Panel Discussion. Today, we received a listener's concern: {message.content}"
             
             async for response in agent_team.run_stream(task=initial_message):
                 if hasattr(response, 'source') and response.content:
