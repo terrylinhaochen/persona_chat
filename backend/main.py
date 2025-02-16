@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.teams import SelectorGroupChat
+from autogen_agentchat.messages import AgentEvent, ChatMessage
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from autogen_agentchat.conditions import TextMentionTermination
 from config.agent_configs import AGENT_CONFIGS
@@ -71,7 +72,7 @@ async def chat(message: Message):
                 model_client=model_client
             )
 
-            def selector_func(messages: Sequence[str]) -> str | None:
+            def selector_func(messages: Sequence[AgentEvent | ChatMessage]) -> str | None:
                 # If no messages, host starts
                 if not messages:
                     return "Host"
@@ -79,7 +80,7 @@ async def chat(message: Message):
                 # Get last message's sender and content
                 last_message = messages[-1]
                 last_speaker = last_message.source
-                last_content = last_message.content
+                last_content = last_message.content if hasattr(last_message, 'content') else ''
                 
                 # After user message, host responds
                 if last_speaker == "user":
